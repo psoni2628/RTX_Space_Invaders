@@ -21,22 +21,13 @@ Target DLL:      UL2CM3.DLL V1.160.3.0
 Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
-N:\MTE241\lab5\lab5.uvprojx
-Project File Date:  07/10/2019
+N:\MTE241\lab5\RTX_Space_Invaders\lab5.uvprojx
+Project File Date:  07/15/2019
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Software\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Target 1'
-compiling main.c...
-Bitmaps/bitmap.h(5): warning:  #1-D: last line of file ends without a newline
-  uint16_t line[]	= {9509, 56283, 56283, 9509, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 6553...
-                 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ...
-main.c(51): warning:  #177-D: variable "c"  was declared but never referenced
-  	char c[1]="|";
-main.c: 2 warnings, 0 errors
-linking...
-Program Size: Code=13264 RO-data=452 RW-data=9792 ZI-data=8320  
-".\Objects\lab5.axf" - 0 Error(s), 2 Warning(s).
+".\Objects\lab5.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -66,45 +57,45 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: Keil::Device:Startup:1.0.0
-      Source file:   Device\Source\ARM\startup_LPC17xx.s
       Include file:  Device\Include\LPC17xx.h
-      Include file:  RTE_Driver\Config\RTE_Device.h
+      Source file:   Device\Source\ARM\startup_LPC17xx.s
       Source file:   Device\Source\system_LPC17xx.c
+      Include file:  RTE_Driver\Config\RTE_Device.h
 
    * Component: ARM::CMSIS:RTOS2:Keil RTX5:Source:5.3.0
-      Source file:   CMSIS\RTOS2\RTX\Config\RTX_Config.c
-      Source file:   CMSIS\RTOS2\RTX\Template\MemPool.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_delay.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_memory.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_evflags.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_evr.c
-      Source file:   CMSIS\RTOS2\RTX\Template\MsgQueue.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_thread.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_mutex.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_kernel.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_msgqueue.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_lib.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_semaphore.c
-      Source file:   CMSIS\RTOS2\RTX\Source\ARM\irq_cm3.s
-      Include file:  CMSIS\RTOS2\RTX\Include\rtx_os.h
-      Include file:  CMSIS\RTOS2\RTX\Config\RTX_Config.h
-      Source file:   CMSIS\RTOS2\RTX\Template\Mutex.c
-      Source file:   CMSIS\RTOS2\RTX\Template\svc_user.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_timer.c
-      Source file:   CMSIS\RTOS2\RTX\Template\Timer.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_mempool.c
-      Source file:   CMSIS\RTOS2\RTX\Source\rtx_system.c
-      Source file:   CMSIS\RTOS2\RTX\Template\Events.c
       Source file:   CMSIS\RTOS2\RTX\Template\Semaphore.c
+      Source file:   CMSIS\RTOS2\RTX\Template\Timer.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_kernel.c
+      Source file:   CMSIS\RTOS2\RTX\Config\RTX_Config.c
+      Source file:   CMSIS\RTOS2\RTX\Template\MsgQueue.c
+      Source file:   CMSIS\RTOS2\RTX\Template\svc_user.c
+      Include file:  CMSIS\RTOS2\RTX\Config\RTX_Config.h
+      Include file:  CMSIS\RTOS2\RTX\Include\rtx_os.h
       Source file:   CMSIS\RTOS2\RTX\Template\main.c
+      Source file:   CMSIS\RTOS2\RTX\Template\Events.c
+      Source file:   CMSIS\RTOS2\RTX\Template\MemPool.c
+      Source file:   CMSIS\RTOS2\RTX\Template\Mutex.c
       Source file:   CMSIS\RTOS2\RTX\Template\Thread.c
+      Source file:   CMSIS\RTOS2\RTX\Source\ARM\irq_cm3.s
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_msgqueue.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_mutex.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_lib.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_mempool.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_memory.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_delay.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_thread.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_evflags.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_semaphore.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_system.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_timer.c
+      Source file:   CMSIS\RTOS2\RTX\Source\rtx_evr.c
       Source file:   CMSIS\RTOS2\Source\os_systick.c
 
    * Component: ARM::CMSIS:CORE:5.1.1
 
    * Component: ::CMSIS:RTOS2:2.1.2 (API)
       Include file:  CMSIS\RTOS2\Include\cmsis_os2.h
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>
