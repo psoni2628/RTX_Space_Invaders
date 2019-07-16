@@ -105,6 +105,24 @@ void bulletMove(void *arg){
 	}
 }
 
+#define NUM_ENEMIES 10
+displayObjects enemyArr[NUM_ENEMIES];
+
+void enemyGen(void *arg) {
+	for (int i = 0; i < NUM_ENEMIES; i++) {
+		enemyArr[i].x = i*24;
+		enemyArr[i].y = 320-ENEMY_H;
+		enemyArr[i].width = ENEMY_W;
+		enemyArr[i].height = ENEMY_H;
+		enemyArr[i].bm = enemy_bm;
+	}
+	
+	while (true) {
+		
+		osThreadYield();
+	}
+}
+
 void displayLED(uint32_t num){
 	LPC_GPIO1->FIODIR |= 0xB0000000;
 	LPC_GPIO2->FIODIR |= 0x0000007C;
@@ -162,8 +180,8 @@ void GLCD_Display(void *arg) {
 		}
 		osMutexRelease(bulletMutex);
 		
-		GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
-		displayLED((uint32_t)1);
+		//GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
+		//displayLED((uint32_t)1);
 		//GLCD_Clear(Black);
 		osThreadYield();
 	}
@@ -179,6 +197,7 @@ int main(void) {
 	osThreadNew(GLCD_Display, NULL, NULL);
 	osThreadNew(userIO, NULL, NULL);
 	osThreadNew(bulletMove, NULL, NULL);
+	osThreadNew(enemyGen, NULL, NULL);
 	
 	osKernelStart();
 	while(true);
