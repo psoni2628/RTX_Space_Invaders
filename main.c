@@ -14,23 +14,48 @@
 
 #define USER_W 26
 #define USER_H 24
+#define USER_COVER_W 10
+#define USER_COVER_H 24
+
+#define BULLET_W 1
+#define BULLET_H 20
+#define BULLET_COVER_W 1
+#define BULLET_COVER_H 10
 
 #define ENEMY_W 25
 #define ENEMY_H 24
 
-#define BULLET_W 1
-#define BULLET_H 20
+#define DIV_LINE_W MAX_X
+#define DIV_LINE_L 4
 
 
 typedef struct{
 	uint16_t y;
 	uint8_t x;
+	uint16_t width;
+	uint16_t height;
+	uint16_t *bm;
 } displayObjects;
 
-displayObjects userShip = {0,CENTERUSERX};
-displayObjects bullet = {26,120-1};
+/*
+ * Objects that will be displayed to screen
+ * 
+ * Dividing line
+ * User ship
+ * User cover
+ * Bullet
+ * Bullet cover
+ * Enemy ships
+ */
+
+displayObjects divisionLine = {40,0,BULLET_COVER_W,BULLET_COVER_H,line};
+displayObjects userShip = {0,CENTERUSERX,USER_W,USER_H,user_bm};
+displayObjects userShipCover = {0,0,USER_COVER_W,USER_COVER_H,black};
+displayObjects bullet = {26,120-1,BULLET_W,BULLET_H,line};
+displayObjects bulletCover = {0,0,BULLET_COVER_W,BULLET_COVER_H,black};
 bool bulletactive = false;
-	
+
+
 void userIO(void *arg){
 	while (true) {
 		uint32_t joystickLeft = (LPC_GPIO1->FIOPIN & 0x800000);
@@ -41,7 +66,7 @@ void userIO(void *arg){
 			userShip.x--;
 			osDelay(osKernelGetTickFreq()*0.005);
 		}
-		else if (!joystickRight && userShip.x<240-24){
+		else if (!joystickRight && userShip.x<MAX_X-USER_H){
 			userShip.x++;
 			osDelay(osKernelGetTickFreq()*0.005);
 		}
@@ -105,17 +130,17 @@ void displayLED(uint32_t num){
 	uint32_t bit_6 = (num & 0x00000001);
 	bit_6 = bit_6 << 6;
 	LPC_GPIO2->FIOSET |= bit_6;
-
 }
 
 void GLCD_Display(void *arg) {
 	GLCD_Init();
 	GLCD_Clear(Black);
 	GLCD_SetBackColor(Black);
+	
 	while (true) {
-		GLCD_Bitmap(0,userShip.x,24,26,(unsigned char*)user_bm);
-		GLCD_Bitmap(0,userShip.x+26,24,10,(unsigned char*)black); // right ship cover
-		GLCD_Bitmap(0,userShip.x-10,24,10,(unsigned char*)black); // left ship cover
+		GLCD_Bitmap(0,userShip.x,24,26,(unsigned char*)userShip.bm);
+		GLCD_Bitmap(0,userShip.x+26,24,10,(unsigned char*)userShipCover.bm); // right ship cover
+		GLCD_Bitmap(0,userShip.x-10,24,10,(unsigned char*)userShipCover.bm); // left ship cover
 		GLCD_Bitmap(40,0,4,240,(unsigned char*)line);
 		if (bulletactive) {
 			GLCD_Bitmap(bullet.y,bullet.x,20,1,(unsigned char*)line); //bullet
@@ -132,9 +157,11 @@ int main(void) {
 	printf("BEGIN\n");
 	SystemInit(); 
 	osKernelInitialize();
+	
 	osThreadNew(GLCD_Display, NULL, NULL);
 	osThreadNew(userIO, NULL, NULL);
 	osThreadNew(bulletMove, NULL, NULL);
+	
 	osKernelStart();
 	while(true);
 }
