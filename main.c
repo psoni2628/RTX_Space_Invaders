@@ -31,6 +31,7 @@
 #define DIV_LINE_W MAX_X
 #define DIV_LINE_H 4
 
+#define NUM_ENEMIES 10
 
 typedef struct{
 	uint16_t y;
@@ -60,6 +61,10 @@ displayObjects enemyShip = {0,0,ENEMY_W,ENEMY_H,enemy_bm};
 bool bulletactive = false;
 
 osMutexId_t bulletMutex;
+
+displayObjects enemyArr[NUM_ENEMIES];
+bool active[NUM_ENEMIES];
+
 
 void userIO(void *arg){
 	while (true) {
@@ -105,10 +110,9 @@ void bulletMove(void *arg){
 	}
 }
 
-#define NUM_ENEMIES 10
-displayObjects enemyArr[NUM_ENEMIES];
 
 void enemyGen(void *arg) {
+	bool min=false;
 	for (int i = 0; i < NUM_ENEMIES; i++) {
 		enemyArr[i].x = i*24;
 		enemyArr[i].y = 320-ENEMY_H;
@@ -118,8 +122,10 @@ void enemyGen(void *arg) {
 	}
 	
 	while (true) {
-		
-		osThreadYield();
+		for (int i = 0; i < NUM_ENEMIES; i++) {
+			enemyArr[i].y-=5;
+		}
+		osDelay(osKernelGetTickFreq()*1);
 	}
 }
 
@@ -179,7 +185,9 @@ void GLCD_Display(void *arg) {
 			GLCD_Bitmap(bullet.y-10, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
 		}
 		osMutexRelease(bulletMutex);
-		
+		for (int i = 0; i < NUM_ENEMIES; i++) {
+			GLCD_Bitmap(enemyArr[i].y, enemyArr[i].x, enemyArr[i].height, enemyArr[i].width, (unsigned char*)enemyShip.bm);
+		}
 		//GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
 		//displayLED((uint32_t)1);
 		//GLCD_Clear(Black);
