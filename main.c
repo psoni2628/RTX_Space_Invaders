@@ -38,17 +38,19 @@ void userIO(void *arg){
 		uint32_t pushbutton = (LPC_GPIO2->FIOPIN & 0x400);
 		
 		if (!joystickLeft && userShip.x>0) {
-				userShip.x--;
+			userShip.x--;
+			osDelay(osKernelGetTickFreq()*0.005);
 		}
 		else if (!joystickRight && userShip.x<240-24){
 			userShip.x++;
+			osDelay(osKernelGetTickFreq()*0.005);
 		}
 		if(!pushbutton && !bulletactive){
 			bulletactive = true;
 			bullet.x=userShip.x+26/2-1;
 		}
 		
-	osDelay(osKernelGetTickFreq()*0.005);
+		osThreadYield();
 	}
 }
 
