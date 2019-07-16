@@ -9,6 +9,9 @@
 #define initialPositionY 0
 #define CENTERUSERX 106
 
+
+#define MIN_X 0
+#define MIN_Y 0
 #define MAX_X 240
 #define MAX_Y 320
 
@@ -56,6 +59,7 @@ displayObjects bulletCover = {0,0,BULLET_COVER_W,BULLET_COVER_H,black};
 displayObjects enemyShip = {0,0,ENEMY_W,ENEMY_H,enemy_bm};
 bool bulletactive = false;
 
+osMutexId_t bulletMutex;
 
 void userIO(void *arg){
 	while (true) {
@@ -63,35 +67,42 @@ void userIO(void *arg){
 		uint32_t joystickRight = (LPC_GPIO1->FIOPIN & 0x2000000);
 		uint32_t pushbutton = (LPC_GPIO2->FIOPIN & 0x400);
 		
-		if (!joystickLeft && userShip.x>0) {
+		if (!joystickLeft && userShip.x > MIN_X) {
 			userShip.x--;
 			osDelay(osKernelGetTickFreq()*0.005);
 		}
-		else if (!joystickRight && userShip.x<MAX_X-USER_H){
+		else if (!joystickRight && userShip.x < MAX_X-USER_H){
 			userShip.x++;
 			osDelay(osKernelGetTickFreq()*0.005);
 		}
+		
+		osMutexAcquire(bulletMutex, osWaitForever);
 		if(!pushbutton && !bulletactive){
 			bulletactive = true;
-			bullet.x=userShip.x+26/2-1;
+			bullet.x = userShip.x + userShip.width/2 - bullet.width;
 		}
+		osMutexRelease(bulletMutex);
 		
 		osThreadYield();
 	}
 }
 
 void bulletMove(void *arg){
-		while(true){
-			if(bulletactive){
-				osDelay(osKernelGetTickFreq()*0.05);
-				bullet.y+=10;
-				if (bullet.y > 330)  {
-					bulletactive = false;
-					bullet.y = 26;
-				}
+	while(true){
+		
+		osMutexAcquire(bulletMutex, osWaitForever);
+		if(bulletactive){
+			osDelay(osKernelGetTickFreq()*0.05);
+			bullet.y+=10;
+			if (bullet.y > MAX_Y+10)  {
+				bulletactive = false;
+				bullet.y = userShip.height+2;
 			}
-				osThreadYield();
 		}
+		osMutexRelease(bulletMutex);
+		
+		osThreadYield();
+	}
 }
 
 void displayLED(uint32_t num){
@@ -143,10 +154,14 @@ void GLCD_Display(void *arg) {
 		GLCD_Bitmap(0, userShip.x+26, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
 		GLCD_Bitmap(0, userShip.x-10, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
 		GLCD_Bitmap(40, 0, divisionLine.height, divisionLine.width, (unsigned char*)divisionLine.bm); // division line
+		
+		osMutexAcquire(bulletMutex, osWaitForever);
 		if (bulletactive) {
 			GLCD_Bitmap(bullet.y, bullet.x, bullet.height, bullet.width, (unsigned char*)bullet.bm); // bullet
 			GLCD_Bitmap(bullet.y-10, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
 		}
+		osMutexRelease(bulletMutex);
+		
 		GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
 		displayLED((uint32_t)1);
 		//GLCD_Clear(Black);
@@ -156,7 +171,9 @@ void GLCD_Display(void *arg) {
 
 int main(void) {
 	printf("BEGIN\n");
-	SystemInit(); 
+	SystemInit();
+	bulletMutex = osMutexNew(NULL);
+	
 	osKernelInitialize();
 	
 	osThreadNew(GLCD_Display, NULL, NULL);
