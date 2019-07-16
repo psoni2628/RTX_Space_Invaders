@@ -26,7 +26,7 @@
 #define ENEMY_H 24
 
 #define DIV_LINE_W MAX_X
-#define DIV_LINE_L 4
+#define DIV_LINE_H 4
 
 
 typedef struct{
@@ -48,11 +48,12 @@ typedef struct{
  * Enemy ships
  */
 
-displayObjects divisionLine = {40,0,BULLET_COVER_W,BULLET_COVER_H,line};
+displayObjects divisionLine = {40,0,DIV_LINE_W,DIV_LINE_H,line};
 displayObjects userShip = {0,CENTERUSERX,USER_W,USER_H,user_bm};
 displayObjects userShipCover = {0,0,USER_COVER_W,USER_COVER_H,black};
 displayObjects bullet = {26,120-1,BULLET_W,BULLET_H,line};
 displayObjects bulletCover = {0,0,BULLET_COVER_W,BULLET_COVER_H,black};
+displayObjects enemyShip = {0,0,ENEMY_W,ENEMY_H,enemy_bm};
 bool bulletactive = false;
 
 
@@ -138,15 +139,15 @@ void GLCD_Display(void *arg) {
 	GLCD_SetBackColor(Black);
 	
 	while (true) {
-		GLCD_Bitmap(0,userShip.x,24,26,(unsigned char*)userShip.bm);
-		GLCD_Bitmap(0,userShip.x+26,24,10,(unsigned char*)userShipCover.bm); // right ship cover
-		GLCD_Bitmap(0,userShip.x-10,24,10,(unsigned char*)userShipCover.bm); // left ship cover
-		GLCD_Bitmap(40,0,4,240,(unsigned char*)line);
+		GLCD_Bitmap(0, userShip.x, userShip.height, userShip.width, (unsigned char*)userShip.bm); // user ship
+		GLCD_Bitmap(0, userShip.x+26, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
+		GLCD_Bitmap(0, userShip.x-10, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
+		GLCD_Bitmap(40, 0, divisionLine.height, divisionLine.width, (unsigned char*)divisionLine.bm); // division line
 		if (bulletactive) {
-			GLCD_Bitmap(bullet.y,bullet.x,20,1,(unsigned char*)line); //bullet
-			GLCD_Bitmap(bullet.y-10,bullet.x,10,1,(unsigned char*)black); //gets you to top right
+			GLCD_Bitmap(bullet.y, bullet.x, bullet.height, bullet.width, (unsigned char*)bullet.bm); // bullet
+			GLCD_Bitmap(bullet.y-10, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
 		}
-		GLCD_Bitmap(320-24,240-25,24,25,(unsigned char*)enemy_bm);
+		GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
 		displayLED((uint32_t)1);
 		//GLCD_Clear(Black);
 		osThreadYield();
