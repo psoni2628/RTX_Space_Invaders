@@ -9,13 +9,26 @@
 #define initialPositionY 0
 #define CENTERUSERX 106
 
+#define MAX_X 240
+#define MAX_Y 320
+
+#define USER_W 26
+#define USER_H 24
+
+#define ENEMY_W 25
+#define ENEMY_H 24
+
+#define BULLET_W 1
+#define BULLET_H 20
+
+
 typedef struct{
-	uint8_t y,x;
-} ship;
+	uint16_t y;
+	uint8_t x;
+} displayObjects;
 
-ship userShip = {0,CENTERUSERX};
-
-ship bullet = {26,120-1};
+displayObjects userShip = {0,CENTERUSERX};
+displayObjects bullet = {26,120-1};
 bool bulletactive = false;
 	
 void userIO(void *arg){
@@ -26,16 +39,13 @@ void userIO(void *arg){
 		
 		if (!joystickLeft && userShip.x>0) {
 				userShip.x--;
-				printf("%d\n",userShip.x);
 		}
 		else if (!joystickRight && userShip.x<240-24){
 			userShip.x++;
-			printf("RIGHT,%d",userShip.x);
 		}
-		if(!pushbutton){
+		if(!pushbutton && !bulletactive){
 			bulletactive = true;
-			bullet.x=userShip.x;
-			printf("posh");
+			bullet.x=userShip.x+26/2-1;
 		}
 		
 	osDelay(osKernelGetTickFreq()*0.005);
@@ -45,8 +55,12 @@ void userIO(void *arg){
 void bulletMove(void *arg){
 		while(true){
 			if(bulletactive){
-				bullet.y++;
-				osDelay(osKernelGetTickFreq()*0.0005);
+				osDelay(osKernelGetTickFreq()*0.05);
+				bullet.y+=10;
+				if (bullet.y > 330)  {
+					bulletactive = false;
+					bullet.y = 26;
+				}
 			}
 				osThreadYield();
 		}
@@ -97,15 +111,17 @@ void GLCD_Display(void *arg) {
 	GLCD_Clear(Black);
 	GLCD_SetBackColor(Black);
 	while (true) {
-		GLCD_Bitmap(0,userShip.x,24,26,(unsigned char*)user_bm); //gets you to top right
-		GLCD_Bitmap(0,userShip.x+26,24,10,(unsigned char*)black); //gets you to top right
-		GLCD_Bitmap(0,userShip.x-10,24,10,(unsigned char*)black); //gets you to top right
+		GLCD_Bitmap(0,userShip.x,24,26,(unsigned char*)user_bm);
+		GLCD_Bitmap(0,userShip.x+26,24,10,(unsigned char*)black); // right ship cover
+		GLCD_Bitmap(0,userShip.x-10,24,10,(unsigned char*)black); // left ship cover
 		GLCD_Bitmap(40,0,4,240,(unsigned char*)line);
-		GLCD_Bitmap(bullet.y,bullet.x,20,1,(unsigned char*)line); //bullet
-		GLCD_Bitmap(bullet.y+20,bullet.x,5,1,(unsigned char*)black); //gets you to top right
-		GLCD_Bitmap(bullet.y-5,bullet.x,5,1,(unsigned char*)black); //gets you to top right
+		if (bulletactive) {
+			GLCD_Bitmap(bullet.y,bullet.x,20,1,(unsigned char*)line); //bullet
+			GLCD_Bitmap(bullet.y-10,bullet.x,10,1,(unsigned char*)black); //gets you to top right
+		}
 		GLCD_Bitmap(320-24,240-25,24,25,(unsigned char*)enemy_bm);
 		displayLED((uint32_t)1);
+		//GLCD_Clear(Black);
 		osThreadYield();
 	}
 }
