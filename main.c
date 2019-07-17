@@ -130,30 +130,31 @@ void addEnemy(displayObjects* ship, uint8_t col){
 		ship->bm = enemy_bm;
 }
 
-void enemyGen(void *arg) {
-	bool min=false;
-	
+void enemy_control(void *arg) {
+	int enemy_num = (int)arg;
 	while (true) {
 		osMutexAcquire(enemyArrMutex, osWaitForever);
 		osMutexAcquire(activeArrMutex, osWaitForever);
-		for (int i = 0; i < NUM_ENEMIES; i++) {
-			if(active[i]){
-				enemyArr[i].y-=5;
-				if (enemyArr[i].y <= 44){
-					gameOver = true;
-				}
-			}
-			else{
-				addEnemy(&enemyArr[i],i);
-				active[i]=true;
+		
+		if(active[enemy_num]){
+			enemyArr[enemy_num].y-=5;
+			if (enemyArr[enemy_num].y <= 44){
+				gameOver = true;
 			}
 		}
+		else{
+			osDelay((osKernelGetTickFreq() * next_event() * 1) >> 16);
+			addEnemy(&enemyArr[enemy_num],enemy_num);
+			active[enemy_num]=true;
+		}
+		
 		osMutexRelease(activeArrMutex);
 		osMutexRelease(enemyArrMutex);
 		
-		osDelay(osKernelGetTickFreq()*0.05);
+		osDelay(osKernelGetTickFreq()*0.5);
 	}
 }
+
 
 void displayLED(uint32_t num){
 	LPC_GPIO1->FIODIR |= 0xB0000000;
@@ -233,6 +234,41 @@ void GLCD_Display(void *arg) {
 				GLCD_Bitmap(enemyArr[i].y-bullet.height, enemyArr[i].x, 25, 24, (unsigned char*)enemyCover);
 			}
 		}
+//		if (active[0]) 
+//			GLCD_Bitmap(enemyArr[0].y, enemyArr[0].x, enemyArr[0].height, enemyArr[0].width, (unsigned char*)enemyShip.bm);
+//		else {
+//			GLCD_Bitmap(enemyArr[0].y, enemyArr[0].x, 25, 24, (unsigned char*)enemyCover);
+//			GLCD_Bitmap(enemyArr[0].y-bullet.height, enemyArr[0].x, 25, 24, (unsigned char*)enemyCover);
+//		}
+//		
+//		if (active[2])
+//			GLCD_Bitmap(enemyArr[2].y, enemyArr[2].x, enemyArr[2].height, enemyArr[2].width, (unsigned char*)enemyShip.bm);
+//		else {
+//			GLCD_Bitmap(enemyArr[2].y, enemyArr[2].x, 25, 24, (unsigned char*)enemyCover);
+//			GLCD_Bitmap(enemyArr[2].y-bullet.height, enemyArr[2].x, 25, 24, (unsigned char*)enemyCover);
+//		}
+//		
+//		if (active[4])
+//			GLCD_Bitmap(enemyArr[4].y, enemyArr[4].x, enemyArr[4].height, enemyArr[4].width, (unsigned char*)enemyShip.bm);
+//		else {
+//			GLCD_Bitmap(enemyArr[4].y, enemyArr[4].x, 25, 24, (unsigned char*)enemyCover);
+//			GLCD_Bitmap(enemyArr[4].y-bullet.height, enemyArr[4].x, 25, 24, (unsigned char*)enemyCover);
+//		}
+//		
+//		if (active[7])
+//			GLCD_Bitmap(enemyArr[7].y, enemyArr[7].x, enemyArr[7].height, enemyArr[7].width, (unsigned char*)enemyShip.bm);
+//		else {
+//			GLCD_Bitmap(enemyArr[7].y, enemyArr[7].x, 25, 24, (unsigned char*)enemyCover);
+//			GLCD_Bitmap(enemyArr[7].y-bullet.height, enemyArr[7].x, 25, 24, (unsigned char*)enemyCover);
+//		}
+//		
+//		if (active[9])
+//			GLCD_Bitmap(enemyArr[9].y, enemyArr[9].x, enemyArr[9].height, enemyArr[9].width, (unsigned char*)enemyShip.bm);
+//		else {
+//			GLCD_Bitmap(enemyArr[9].y, enemyArr[9].x, 25, 24, (unsigned char*)enemyCover);
+//			GLCD_Bitmap(enemyArr[9].y-bullet.height, enemyArr[9].x, 25, 24, (unsigned char*)enemyCover);
+//		}
+		
 		osMutexRelease(activeArrMutex);
 		osMutexRelease(enemyArrMutex);
 		//GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
@@ -256,7 +292,9 @@ int main(void) {
 	osThreadNew(GLCD_Display, NULL, NULL);
 	osThreadNew(userIO, NULL, NULL);
 	osThreadNew(bulletMove, NULL, NULL);
-	osThreadNew(enemyGen, NULL, NULL);
+	for (int i = 0; i < NUM_ENEMIES; i++) {
+		osThreadNew(enemy_control, (void *)i, NULL);
+	}
 	
 	osKernelStart();
 	while(true);
