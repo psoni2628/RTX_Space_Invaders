@@ -9,7 +9,6 @@
 #define initialPositionY 0
 #define CENTERUSERX 106
 
-
 #define MIN_X 0
 #define MIN_Y 0
 #define MAX_X 240
@@ -29,9 +28,10 @@
 #define ENEMY_H 24
 
 #define DIV_LINE_W MAX_X
-#define DIV_LINE_H 4
+#define DIV_LINE_H 1
 
 #define NUM_ENEMIES 10
+#define MAX_POINTS 255
 
 typedef struct{
 	uint16_t y;
@@ -59,11 +59,15 @@ displayObjects bullet = {26,120-1,BULLET_W,BULLET_H,line};
 displayObjects bulletCover = {0,0,BULLET_COVER_W,BULLET_COVER_H,black};
 displayObjects enemyShip = {0,0,ENEMY_W,ENEMY_H,enemy_bm};
 bool bulletactive = false;
+bool gameOver = false;
+int totalPoints = 0;
 
 osMutexId_t bulletMutex;
+osMutexId_t enemyArrMutex;
+osMutexId_t activeArrMutex;
 
 displayObjects enemyArr[NUM_ENEMIES];
-bool active[NUM_ENEMIES];
+bool active[NUM_ENEMIES] = {0,0,0,0,0,0,0,0,0,0};
 
 
 void userIO(void *arg){
@@ -74,11 +78,11 @@ void userIO(void *arg){
 		
 		if (!joystickLeft && userShip.x > MIN_X) {
 			userShip.x--;
-			osDelay(osKernelGetTickFreq()*0.005);
+			osDelay(osKernelGetTickFreq()*0.008);
 		}
 		else if (!joystickRight && userShip.x < MAX_X-USER_H){
 			userShip.x++;
-			osDelay(osKernelGetTickFreq()*0.005);
+			osDelay(osKernelGetTickFreq()*0.008);
 		}
 		
 		osMutexAcquire(bulletMutex, osWaitForever);
@@ -103,6 +107,14 @@ void bulletMove(void *arg){
 				bulletactive = false;
 				bullet.y = userShip.height+2;
 			}
+			
+			for(int i=0;i<NUM_ENEMIES;i++){
+				if(bullet.x<=(i+1)*24 && bullet.x>=i*24 && bullet.y>=enemyArr[i].y){
+					active[i]=false;
+					bullet.y = MAX_Y+10;
+					totalPoints+=1;
+				}
+			}
 		}
 		osMutexRelease(bulletMutex);
 		
@@ -110,22 +122,36 @@ void bulletMove(void *arg){
 	}
 }
 
+void addEnemy(displayObjects* ship, uint8_t col){
+		ship->x = col*24;
+		ship->y = 320-ENEMY_H;
+		ship->width = ENEMY_W;
+		ship->height = ENEMY_H; 
+		ship->bm = enemy_bm;
+}
 
 void enemyGen(void *arg) {
 	bool min=false;
-	for (int i = 0; i < NUM_ENEMIES; i++) {
-		enemyArr[i].x = i*24;
-		enemyArr[i].y = 320-ENEMY_H;
-		enemyArr[i].width = ENEMY_W;
-		enemyArr[i].height = ENEMY_H;
-		enemyArr[i].bm = enemy_bm;
-	}
 	
 	while (true) {
+		osMutexAcquire(enemyArrMutex, osWaitForever);
+		osMutexAcquire(activeArrMutex, osWaitForever);
 		for (int i = 0; i < NUM_ENEMIES; i++) {
-			enemyArr[i].y-=5;
+			if(active[i]){
+				enemyArr[i].y-=5;
+				if (enemyArr[i].y <= 44){
+					gameOver = true;
+				}
+			}
+			else{
+				addEnemy(&enemyArr[i],i);
+				active[i]=true;
+			}
 		}
-		osDelay(osKernelGetTickFreq()*1);
+		osMutexRelease(activeArrMutex);
+		osMutexRelease(enemyArrMutex);
+		
+		osDelay(osKernelGetTickFreq()*0.05);
 	}
 }
 
@@ -174,6 +200,16 @@ void GLCD_Display(void *arg) {
 	GLCD_SetBackColor(Black);
 	
 	while (true) {
+		if (gameOver) {
+			GLCD_Clear(Black);
+			GLCD_Bitmap(139,84,21,36,(unsigned char*)gameOver_bm);
+			break;
+		}
+		if (totalPoints >= MAX_POINTS) {
+			GLCD_Clear(Black);
+			GLCD_Bitmap(139,84,11,42,(unsigned char*)youWin_bm);
+			break;
+		}
 		GLCD_Bitmap(0, userShip.x, userShip.height, userShip.width, (unsigned char*)userShip.bm); // user ship
 		GLCD_Bitmap(0, userShip.x+userShip.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
 		GLCD_Bitmap(0, userShip.x-userShipCover.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
@@ -185,12 +221,25 @@ void GLCD_Display(void *arg) {
 			GLCD_Bitmap(bullet.y-bulletCover.height, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
 		}
 		osMutexRelease(bulletMutex);
+		
+		osMutexAcquire(enemyArrMutex, osWaitForever);
+		osMutexAcquire(activeArrMutex, osWaitForever);
 		for (int i = 0; i < NUM_ENEMIES; i++) {
-			GLCD_Bitmap(enemyArr[i].y, enemyArr[i].x, enemyArr[i].height, enemyArr[i].width, (unsigned char*)enemyShip.bm);
+			if(active[i]){
+				GLCD_Bitmap(enemyArr[i].y, enemyArr[i].x, enemyArr[i].height, enemyArr[i].width, (unsigned char*)enemyShip.bm);
+			}
+			else {
+				GLCD_Bitmap(enemyArr[i].y, enemyArr[i].x, 25, 24, (unsigned char*)enemyCover);
+				GLCD_Bitmap(enemyArr[i].y-bullet.height, enemyArr[i].x, 25, 24, (unsigned char*)enemyCover);
+			}
 		}
+		osMutexRelease(activeArrMutex);
+		osMutexRelease(enemyArrMutex);
 		//GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
 		//displayLED((uint32_t)1);
 		//GLCD_Clear(Black);
+		displayLED(totalPoints);
+		
 		osThreadYield();
 	}
 }
@@ -199,6 +248,8 @@ int main(void) {
 	printf("BEGIN\n");
 	SystemInit();
 	bulletMutex = osMutexNew(NULL);
+	enemyArrMutex = osMutexNew(NULL);
+	activeArrMutex = osMutexNew(NULL);
 	
 	osKernelInitialize();
 	
