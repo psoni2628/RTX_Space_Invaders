@@ -175,14 +175,14 @@ void GLCD_Display(void *arg) {
 	
 	while (true) {
 		GLCD_Bitmap(0, userShip.x, userShip.height, userShip.width, (unsigned char*)userShip.bm); // user ship
-		GLCD_Bitmap(0, userShip.x+26, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
-		GLCD_Bitmap(0, userShip.x-10, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
+		GLCD_Bitmap(0, userShip.x+userShip.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
+		GLCD_Bitmap(0, userShip.x-userShipCover.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
 		GLCD_Bitmap(40, 0, divisionLine.height, divisionLine.width, (unsigned char*)divisionLine.bm); // division line
 		
 		osMutexAcquire(bulletMutex, osWaitForever);
 		if (bulletactive) {
 			GLCD_Bitmap(bullet.y, bullet.x, bullet.height, bullet.width, (unsigned char*)bullet.bm); // bullet
-			GLCD_Bitmap(bullet.y-10, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
+			GLCD_Bitmap(bullet.y-bulletCover.height, bullet.x, bulletCover.height, bulletCover.width, (unsigned char*)bulletCover.bm); // bullet cover
 		}
 		osMutexRelease(bulletMutex);
 		for (int i = 0; i < NUM_ENEMIES; i++) {
