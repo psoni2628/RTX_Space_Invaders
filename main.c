@@ -6,6 +6,10 @@
 #include "Dependencies/random.h"
 #include "Bitmaps/bitmap.h"
 
+// Default thread stack size = 200 bytes
+// Idle thread stack size = 72 bytes
+// Stack size = 0x2000
+
 #define initialPositionY 0
 #define CENTERUSERX 106
 
