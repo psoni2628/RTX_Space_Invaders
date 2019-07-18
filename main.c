@@ -35,7 +35,7 @@
 #define DIV_LINE_H 1
 
 #define NUM_ENEMIES 10
-#define MAX_POINTS 255
+#define MAX_POINTS 5
 
 typedef struct{
 	uint16_t y;
@@ -159,7 +159,6 @@ void enemy_control(void *arg) {
 	}
 }
 
-
 void displayLED(uint32_t num){
 	LPC_GPIO1->FIODIR |= 0xB0000000;
 	LPC_GPIO2->FIODIR |= 0x0000007C;
@@ -207,12 +206,12 @@ void GLCD_Display(void *arg) {
 	while (true) {
 		if (gameOver) {
 			GLCD_Clear(Black);
-			GLCD_Bitmap(139,84,21,36,(unsigned char*)gameOver_bm);
+			GLCD_Bitmap(139,102,21,36,(unsigned char*)gameOver_bm);
 			break;
 		}
 		if (totalPoints >= MAX_POINTS) {
 			GLCD_Clear(Black);
-			GLCD_Bitmap(139,84,11,42,(unsigned char*)youWin_bm);
+			GLCD_Bitmap(155,99,11,42,(unsigned char*)youWin_bm);
 			break;
 		}
 		GLCD_Bitmap(0, userShip.x, userShip.height, userShip.width, (unsigned char*)userShip.bm); // user ship
@@ -238,46 +237,9 @@ void GLCD_Display(void *arg) {
 				GLCD_Bitmap(enemyArr[i].y-bullet.height, enemyArr[i].x, 25, 24, (unsigned char*)enemyCover);
 			}
 		}
-//		if (active[0]) 
-//			GLCD_Bitmap(enemyArr[0].y, enemyArr[0].x, enemyArr[0].height, enemyArr[0].width, (unsigned char*)enemyShip.bm);
-//		else {
-//			GLCD_Bitmap(enemyArr[0].y, enemyArr[0].x, 25, 24, (unsigned char*)enemyCover);
-//			GLCD_Bitmap(enemyArr[0].y-bullet.height, enemyArr[0].x, 25, 24, (unsigned char*)enemyCover);
-//		}
-//		
-//		if (active[2])
-//			GLCD_Bitmap(enemyArr[2].y, enemyArr[2].x, enemyArr[2].height, enemyArr[2].width, (unsigned char*)enemyShip.bm);
-//		else {
-//			GLCD_Bitmap(enemyArr[2].y, enemyArr[2].x, 25, 24, (unsigned char*)enemyCover);
-//			GLCD_Bitmap(enemyArr[2].y-bullet.height, enemyArr[2].x, 25, 24, (unsigned char*)enemyCover);
-//		}
-//		
-//		if (active[4])
-//			GLCD_Bitmap(enemyArr[4].y, enemyArr[4].x, enemyArr[4].height, enemyArr[4].width, (unsigned char*)enemyShip.bm);
-//		else {
-//			GLCD_Bitmap(enemyArr[4].y, enemyArr[4].x, 25, 24, (unsigned char*)enemyCover);
-//			GLCD_Bitmap(enemyArr[4].y-bullet.height, enemyArr[4].x, 25, 24, (unsigned char*)enemyCover);
-//		}
-//		
-//		if (active[7])
-//			GLCD_Bitmap(enemyArr[7].y, enemyArr[7].x, enemyArr[7].height, enemyArr[7].width, (unsigned char*)enemyShip.bm);
-//		else {
-//			GLCD_Bitmap(enemyArr[7].y, enemyArr[7].x, 25, 24, (unsigned char*)enemyCover);
-//			GLCD_Bitmap(enemyArr[7].y-bullet.height, enemyArr[7].x, 25, 24, (unsigned char*)enemyCover);
-//		}
-//		
-//		if (active[9])
-//			GLCD_Bitmap(enemyArr[9].y, enemyArr[9].x, enemyArr[9].height, enemyArr[9].width, (unsigned char*)enemyShip.bm);
-//		else {
-//			GLCD_Bitmap(enemyArr[9].y, enemyArr[9].x, 25, 24, (unsigned char*)enemyCover);
-//			GLCD_Bitmap(enemyArr[9].y-bullet.height, enemyArr[9].x, 25, 24, (unsigned char*)enemyCover);
-//		}
 		
 		osMutexRelease(activeArrMutex);
 		osMutexRelease(enemyArrMutex);
-		//GLCD_Bitmap(320-24, 240-25, enemyShip.height, enemyShip.width, (unsigned char*)enemyShip.bm); // enemy ship
-		//displayLED((uint32_t)1);
-		//GLCD_Clear(Black);
 		displayLED(totalPoints);
 		
 		osThreadYield();
@@ -285,7 +247,6 @@ void GLCD_Display(void *arg) {
 }
 
 int main(void) {
-	printf("BEGIN\n");
 	SystemInit();
 	bulletMutex = osMutexNew(NULL);
 	enemyArrMutex = osMutexNew(NULL);

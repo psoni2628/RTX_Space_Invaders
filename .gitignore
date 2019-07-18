@@ -2,3 +2,4 @@ __pycache__/
 Objects/
 lab5.uvg*
 listings/
+*.tmp
