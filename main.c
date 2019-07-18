@@ -35,7 +35,7 @@
 #define DIV_LINE_H 1
 
 #define NUM_ENEMIES 10
-#define MAX_POINTS 5
+#define MAX_POINTS 255
 
 typedef struct{
 	uint16_t y;
