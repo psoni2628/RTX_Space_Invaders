@@ -69,6 +69,7 @@ int totalPoints = 0;
 osMutexId_t bulletMutex;
 osMutexId_t enemyArrMutex;
 osMutexId_t activeArrMutex;
+osMutexId_t totalPointsMutex;
 
 displayObjects enemyArr[NUM_ENEMIES];
 bool active[NUM_ENEMIES] = {0,0,0,0,0,0,0,0,0,0};
@@ -204,6 +205,10 @@ void GLCD_Display(void *arg) {
 	GLCD_SetBackColor(Black);
 	
 	while (true) {
+		osMutexAcquire(totalPointsMutex, osWaitForever);
+		displayLED(totalPoints);
+		osMutexRelease(totalPointsMutex);
+
 		if (gameOver) {
 			GLCD_Clear(Black);
 			GLCD_Bitmap(139,102,21,36,(unsigned char*)gameOver_bm);
@@ -240,7 +245,6 @@ void GLCD_Display(void *arg) {
 		
 		osMutexRelease(activeArrMutex);
 		osMutexRelease(enemyArrMutex);
-		displayLED(totalPoints);
 		
 		osThreadYield();
 	}
@@ -251,6 +255,7 @@ int main(void) {
 	bulletMutex = osMutexNew(NULL);
 	enemyArrMutex = osMutexNew(NULL);
 	activeArrMutex = osMutexNew(NULL);
+	totalPointsMutex = osMutexNew(NULL);
 	
 	osKernelInitialize();
 	
