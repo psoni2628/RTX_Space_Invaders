@@ -67,9 +67,11 @@ bool gameOver = false;
 int totalPoints = 0;
 
 osMutexId_t bulletMutex;
+osMutexId_t userMutex;
 osMutexId_t enemyArrMutex;
 osMutexId_t activeArrMutex;
 osMutexId_t totalPointsMutex;
+osMutexId_t gameOverMutex;
 
 displayObjects enemyArr[NUM_ENEMIES];
 bool active[NUM_ENEMIES] = {0,0,0,0,0,0,0,0,0,0};
@@ -81,6 +83,7 @@ void userIO(void *arg){
 		uint32_t joystickRight = (LPC_GPIO1->FIOPIN & 0x2000000);
 		uint32_t pushbutton = (LPC_GPIO2->FIOPIN & 0x400);
 		
+		osMutexAcquire(userMutex, osWaitForever);
 		if (!joystickLeft && userShip.x > MIN_X) {
 			userShip.x--;
 			osDelay(osKernelGetTickFreq()*0.008);
@@ -96,6 +99,7 @@ void userIO(void *arg){
 			bullet.x = userShip.x + userShip.width/2 - bullet.width;
 		}
 		osMutexRelease(bulletMutex);
+		osMutexRelease(userMutex);
 		
 		osThreadYield();
 	}
@@ -144,7 +148,9 @@ void enemy_control(void *arg) {
 		if(active[enemy_num]){
 			enemyArr[enemy_num].y-=5;
 			if (enemyArr[enemy_num].y <= 44){
+				osMutexAcquire(gameOverMutex, osWaitForever);
 				gameOver = true;
+				osMutexRelease(gameOverMutex);
 			}
 		}
 		else{
@@ -207,21 +213,27 @@ void GLCD_Display(void *arg) {
 	while (true) {
 		osMutexAcquire(totalPointsMutex, osWaitForever);
 		displayLED(totalPoints);
-		osMutexRelease(totalPointsMutex);
 
+		osMutexAcquire(gameOverMutex, osWaitForever);
 		if (gameOver) {
 			GLCD_Clear(Black);
 			GLCD_Bitmap(139,102,21,36,(unsigned char*)gameOver_bm);
 			break;
 		}
+		osMutexRelease(gameOverMutex);
+		
 		if (totalPoints >= MAX_POINTS) {
 			GLCD_Clear(Black);
 			GLCD_Bitmap(155,99,11,42,(unsigned char*)youWin_bm);
 			break;
 		}
+		osMutexRelease(totalPointsMutex);
+
+		osMutexAcquire(userMutex, osWaitForever);
 		GLCD_Bitmap(0, userShip.x, userShip.height, userShip.width, (unsigned char*)userShip.bm); // user ship
 		GLCD_Bitmap(0, userShip.x+userShip.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // right ship cover
 		GLCD_Bitmap(0, userShip.x-userShipCover.width, userShipCover.height, userShipCover.width,(unsigned char*)userShipCover.bm); // left ship cover
+		osMutexRelease(userMutex);
 		GLCD_Bitmap(40, 0, divisionLine.height, divisionLine.width, (unsigned char*)divisionLine.bm); // division line
 		
 		osMutexAcquire(bulletMutex, osWaitForever);
@@ -253,9 +265,11 @@ void GLCD_Display(void *arg) {
 int main(void) {
 	SystemInit();
 	bulletMutex = osMutexNew(NULL);
+	userMutex = osMutexNew(NULL);
 	enemyArrMutex = osMutexNew(NULL);
 	activeArrMutex = osMutexNew(NULL);
 	totalPointsMutex = osMutexNew(NULL);
+	gameOverMutex = osMutexNew(NULL);
 	
 	osKernelInitialize();
 	
