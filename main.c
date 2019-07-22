@@ -76,7 +76,7 @@ osMutexId_t gameOverMutex;
 displayObjects enemyArr[NUM_ENEMIES];
 bool active[NUM_ENEMIES] = {0,0,0,0,0,0,0,0,0,0};
 
-
+bool startup=true;
 void userIO(void *arg){
 	while (true) {
 		uint32_t joystickLeft = (LPC_GPIO1->FIOPIN & 0x800000);
@@ -84,6 +84,11 @@ void userIO(void *arg){
 		uint32_t pushbutton = (LPC_GPIO2->FIOPIN & 0x400);
 		
 		osMutexAcquire(userMutex, osWaitForever);
+		if(startup){
+				osDelay(osKernelGetTickFreq()*1.75);
+				startup=false;
+				totalPoints=0;
+			}
 		if (!joystickLeft && userShip.x > MIN_X) {
 			userShip.x--;
 			osDelay(osKernelGetTickFreq()*0.008);
@@ -147,7 +152,7 @@ void enemy_control(void *arg) {
 		
 		if(active[enemy_num]){
 			enemyArr[enemy_num].y-=5;
-			if (enemyArr[enemy_num].y <= 44){
+			if (enemyArr[enemy_num].y <= 40){
 				osMutexAcquire(gameOverMutex, osWaitForever);
 				gameOver = true;
 				osMutexRelease(gameOverMutex);
